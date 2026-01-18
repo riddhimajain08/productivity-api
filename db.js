@@ -10,13 +10,6 @@ const pool = new Pool({
     ssl: isProduction ? { rejectUnauthorized: false } : false
 });
 
-pool.connect((err) => {
-    if (err) {
-        return console.error('Error acquiring client', err.stack);
-    }
-    console.log('Connected to database!');
-});
-
 module.exports = {
     query: (text, params) => pool.query(text, params),
 };
