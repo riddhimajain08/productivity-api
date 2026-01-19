@@ -192,6 +192,36 @@ app.get('/dashboard/stats', authenticateToken, async (req, res) => {
     }
 });
 
+// TEMPORARY: Route to create tables in the cloud database
+app.get('/init-db', async (req, res) => {
+  try {
+    const createUsersTable = `
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        username VARCHAR(50) UNIQUE NOT NULL,
+        password TEXT NOT NULL
+      );
+    `;
+    
+    const createTasksTable = `
+      CREATE TABLE IF NOT EXISTS tasks (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR(100) NOT NULL,
+        description TEXT,
+        status VARCHAR(20) DEFAULT 'Pending',
+        user_id INTEGER REFERENCES users(id)
+      );
+    `;
+
+    await db.query(createUsersTable);
+    await db.query(createTasksTable);
+
+    res.send("Tables created successfully! You can now register and login.");
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error creating tables: " + error.message);
+  }
+});
 const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
