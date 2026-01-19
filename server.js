@@ -193,30 +193,38 @@ app.get('/dashboard/stats', authenticateToken, async (req, res) => {
 });
 
 // TEMPORARY: Route to create tables in the cloud database
+// TEMPORARY: Route to create tables in the cloud database
 app.get('/init-db', async (req, res) => {
   try {
+    // 1. Create Users Table (Matches your /register and /login code)
     const createUsersTable = `
       CREATE TABLE IF NOT EXISTS users (
-        id SERIAL PRIMARY KEY,
-        username VARCHAR(50) UNIQUE NOT NULL,
+        user_id SERIAL PRIMARY KEY,
+        name VARCHAR(100),
+        email VARCHAR(100) UNIQUE NOT NULL,
         password TEXT NOT NULL
       );
     `;
     
+    // 2. Create Tasks Table (Matches your /tasks code)
     const createTasksTable = `
       CREATE TABLE IF NOT EXISTS tasks (
-        id SERIAL PRIMARY KEY,
-        title VARCHAR(100) NOT NULL,
+        task_id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(user_id),
+        title VARCHAR(255) NOT NULL,
         description TEXT,
-        status VARCHAR(20) DEFAULT 'Pending',
-        user_id INTEGER REFERENCES users(id)
+        priority VARCHAR(50),
+        status VARCHAR(50) DEFAULT 'Pending',
+        deadline TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `;
 
     await db.query(createUsersTable);
     await db.query(createTasksTable);
 
-    res.send("Tables created successfully! You can now register and login.");
+    res.send("Tables created successfully! Schema matches your app logic.");
   } catch (error) {
     console.error(error);
     res.status(500).send("Error creating tables: " + error.message);
